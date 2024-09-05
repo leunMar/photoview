@@ -88,7 +88,7 @@ WORKDIR /home/photoview
 
 COPY api/data /app/data
 COPY --from=ui /app/ui/dist /app/ui
-COPY --from=viktorstrate/photoview:master /app/photoview /app/photoview
+COPY --from=api /app/api/photoview /app/photoview
 
 ENV PHOTOVIEW_LISTEN_IP=127.0.0.1
 ENV PHOTOVIEW_LISTEN_PORT=80
