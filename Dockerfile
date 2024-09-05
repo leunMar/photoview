@@ -35,39 +35,39 @@ RUN if [ "${BUILD_DATE}" = "undefined" ]; then \
   fi; \
   npm run build -- --base=$UI_PUBLIC_URL
 
-### Build API ###
-FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.22-bookworm AS api
-ARG TARGETPLATFORM
+# ### Build API ###
+# FROM --platform=${BUILDPLATFORM:-linux/amd64} golang:1.22-bookworm AS api
+# ARG TARGETPLATFORM
 
-# See for details: https://github.com/hadolint/hadolint/wiki/DL4006
-SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+# # See for details: https://github.com/hadolint/hadolint/wiki/DL4006
+# SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
 
-WORKDIR /app/api
+# WORKDIR /app/api
 
-ENV GOPATH="/go"
-ENV PATH="${GOPATH}/bin:${PATH}"
-ENV CGO_ENABLED=1
+# ENV GOPATH="/go"
+# ENV PATH="${GOPATH}/bin:${PATH}"
+# ENV CGO_ENABLED=1
 
-# Download dependencies
-COPY scripts/*.sh /app/scripts/
-RUN chmod +x /app/scripts/*.sh \
-  && /app/scripts/install_build_dependencies.sh \
-  && /app/scripts/install_runtime_dependencies.sh
+# # Download dependencies
+# COPY scripts/*.sh /app/scripts/
+# RUN chmod +x /app/scripts/*.sh \
+#   && /app/scripts/install_build_dependencies.sh \
+#   && /app/scripts/install_runtime_dependencies.sh
 
-COPY api/go.mod api/go.sum /app/api/
-RUN source /app/scripts/set_compiler_env.sh \
-  && go env \
-  && go mod download \
-  # Patch go-face
-  && sed -i 's/-march=native//g' ${GOPATH}/pkg/mod/github.com/!kagami/go-face*/face.go \
-  # Build dependencies that use CGO
-  && go install \
-    github.com/mattn/go-sqlite3 \
-    github.com/Kagami/go-face
+# COPY api/go.mod api/go.sum /app/api/
+# RUN source /app/scripts/set_compiler_env.sh \
+#   && go env \
+#   && go mod download \
+#   # Patch go-face
+#   && sed -i 's/-march=native//g' ${GOPATH}/pkg/mod/github.com/!kagami/go-face*/face.go \
+#   # Build dependencies that use CGO
+#   && go install \
+#     github.com/mattn/go-sqlite3 \
+#     github.com/Kagami/go-face
 
-COPY api /app/api
-RUN source /app/scripts/set_compiler_env.sh \
-  && go build -v -o photoview .
+# COPY api /app/api
+# RUN source /app/scripts/set_compiler_env.sh \
+#   && go build -v -o photoview .
 
 ### Build release image ###
 FROM --platform=${BUILDPLATFORM:-linux/amd64} debian:bookworm-slim AS release
@@ -88,7 +88,7 @@ WORKDIR /home/photoview
 
 COPY api/data /app/data
 COPY --from=ui /app/ui/dist /app/ui
-COPY --from=api /app/api/photoview /app/photoview
+COPY --from=viktorstrate/photoview:master /app/photoview /app/photoview
 
 ENV PHOTOVIEW_LISTEN_IP=127.0.0.1
 ENV PHOTOVIEW_LISTEN_PORT=80
